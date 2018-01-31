@@ -1,0 +1,334 @@
+<div class="box">
+  <div class="box-header">
+    <div class="col-md-6" style="padding: 0;">
+        <button class="form-control btn btn-primary" data-toggle="modal" data-target="#modal-pegawai-add"><i class="glyphicon glyphicon-plus-sign"></i> Tambah Data</button>
+    </div>
+    <div class="col-md-3">
+        <a href="/pegawai/export" target="_blank" class="form-control btn btn-default"><i class="glyphicon glyphicon glyphicon-floppy-save"></i> Export Data Excel</a>
+    </div>
+  </div>
+  <div class="box-body">
+    <table id="list-data" class="table table-bordered table-striped" width="100%">
+	    <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Tahun Masuk</th>
+                <th>No Telp</th>
+                <th>Asal kota</th>
+                <th>Jenis Kelamin</th>
+                <th>Status</th>
+                <th>Posisi</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal-pegawai-add" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+		<div class="col-md-offset-1 col-md-10 col-md-offset-1 well">
+      <div class="form-msg"></div>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <%- include add.ejs %>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-pegawai-update" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+  		<div class="col-md-offset-1 col-md-10 col-md-offset-1 well">
+        <div class="form-msg"></div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <%- include update.ejs %>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="modal fade" id="modal-pegawai-detail" role="dialog">
+    <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content">
+      <div class="col-md-12 well">
+          <div class="form-msg"></div>
+        <h3 style="display:block; text-align:center;"><b>Detail Pegawai</b></h3><br></br>
+      
+  		  <form id="form-pegawai-detail">
+  	        <input type="hidden" name="id">
+  		    <div class="input-group form-group">
+            <span class="input-group-addon" id="sizing-addon2">
+              <i>Nama :</i>
+            </span>
+            <input type="" class="form-control" name="pegawai_name" aria-describedby="sizing-addon2">
+          </div>
+
+          <div class='input-group form-group'>
+              <span class="input-group-addon">
+                  <i>Tanggal Lahir :</i>
+                </span>
+            <input type="date" class="form-control" name="TTL" aria-describedby="sizing-addon2">
+            </div>
+
+            <div class="input-group form-group">
+              <span class="input-group-addon" id="sizing-addon2">
+                <i>Alamat :</i>
+              </span>
+              <input type="text" class="form-control" placeholder="Alamat" name="alamat" aria-describedby="sizing-addon2">
+              </div>
+
+          <div class="input-group form-group">
+            <span class="input-group-addon" id="sizing-addon2">
+              <i>No. Telp :</i>
+            </span>
+            <input type="text" class="form-control" name="telp" aria-describedby="sizing-addon2">
+          </div>
+          
+          <div class="input-group form-group">
+            <span class="input-group-addon" id="sizing-addon2">
+              <i>Gender :</i>
+            </span>
+            <input type="text" class="form-control" name="pegawai_gender" aria-describedby="sizing-addon2">
+          </div>
+
+          <div class="input-group form-group">
+            <span class="input-group-addon" id="sizing-addon2">
+              <i>Status :</i>
+            </span>
+            <input type="text" class="form-control" name="pegawai_status" aria-describedby="sizing-addon2">
+          </div>	  
+
+          
+  		  </form>
+  
+        <div class="text-right">
+          <button class="btn btn-danger" data-dismiss="modal"> Close</button>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('#list-data').DataTable( {
+        ajax: {
+        	url: '/pegawai/get',
+        	type: 'GET'
+        },
+        columns: [
+            { data: "pegawai_name" },
+            { data: "tahun"},
+            { data: "telp" },
+            { data: "kota.kota_name"},
+            { data: "pegawai_gender" },
+            { data: "status"},
+            { data: "posisi.posisi_name" },
+          
+            { data: "act", className: "text-center" }
+        ]
+    });
+  
+
+    socket.connect('/public/join');
+    io.socket.on('pegawai_add', function (out) {
+    	if (out.status) {
+			 $('#list-data').DataTable().ajax.reload();
+    	}
+  	});
+  	io.socket.on('pegawai_update', function (out) {
+    	if (out.status) {
+			 $('#list-data').DataTable().ajax.reload();
+    	}
+  	});
+  	io.socket.on('pegawai_delete', function (out) {
+    	if (out.status) {
+			 $('#list-data').DataTable().ajax.reload();
+    	}
+  	});
+  });
+
+  
+  $(document).on('submit', '#form-pegawai-add', function(e) {
+  	e.preventDefault();
+
+    var data = $(this).serialize();
+    $.post('/pegawai/add', data, function(out) {
+		  $('#modal-pegawai-add').modal('hide');
+    	if (out.status) {
+  			$(this).find('input[name="pegawai_name"]').val('');
+    		swal('Success', out.msg, 'success');
+    	} else {
+    		swal('Failed', out.msg, 'error');
+    	}
+    });
+  });
+
+  $(document).on('click', '.btn-pegawai-update', function() {
+  	var pegawai_id 		= $(this).data('id');
+
+  	$.get('/pegawai/show_edit/'+pegawai_id, function(out) {
+      var form = $('#form-pegawai-update');
+  
+      console.log(out);
+  		if (out.status) {
+  			form.find('input[name="id"]').val(out.data.id);
+        form.find('input[name="pegawai_name"]').val(out.data.pegawai_name);
+        form.find('input[name="tahun"]').val(out.data.tahun);
+        form.find('input[name="TTL"]').val(out.data.TTL);
+        form.find('input[name="telp"]').val(out.data.telp);
+        form.find('select[name="kota_name"]').find('option[value="'+out.data.kota+'"]').prop('selected', true);
+        form.find('input[name="alamat"]').val(out.data.alamat);
+        form.find('input[name="pegawai_gender"][value="'+out.data.pegawai_gender+'"]').prop('checked', true);
+        form.find('input[name="pegawai_status"][value="'+out.data.status+'"]').prop('checked', true);
+        form.find('select[name="posisi_name"]').find('option[value="'+out.data.posisi+'"]').prop('selected', true);
+    
+  			$('#modal-pegawai-update').modal('show');
+  		} else {
+  			swal('Failed', out.msg, 'error');
+  		}
+  	});
+
+    $('#modal-pegawai-update').modal('show');
+  });
+
+  $(document).on('submit', '#form-pegawai-update', function(e) {
+  	e.preventDefault();
+
+    var data = $(this).serialize();
+    console.log(data);
+    $.post('/pegawai/update', data, function(out) {
+		  $('#modal-pegawai-update').modal('hide');
+    	if (out.status) {
+    		swal('Success', out.msg, 'success');
+    	} else {
+    		swal('Failed', out.msg, 'error');
+    	}
+    });
+  });
+
+  $(document).on('click', '.btn-pegawai-delete', function() {
+  	var pegawai_id 		= $(this).data('id');
+
+  	swal({
+  		title: 'Delete',
+  		text: "Hapus Data Ini?",
+  		type: 'warning',
+  		showCancelButton: true,
+  		confirmButtonText: 'Ya, Hapus Data Ini',
+  		cancelButtonText: 'Batal',
+  		confirmButtonClass: 'btn btn-success',
+  		cancelButtonClass: 'btn btn-danger'
+  	}).then(function () {
+  	  	$.post('/pegawai/delete', {pegawai_id: pegawai_id}, function(out) {
+  	    	if (out.status) {
+  	    		swal('Success', out.msg, 'success');
+  	    	} else {
+  	    		swal('Failed', out.msg, 'error');
+  	    	}
+  	    });
+  	}, function (dismiss) {
+  		if (dismiss === 'cancel') {}
+  	});
+  });
+
+  $(document).on('click', '.btn-pegawai-detail', function() {
+  	var pegawai_id 		= $(this).data('id');
+
+  	$.get('/pegawai/show_edit/'+pegawai_id, function(out) {
+      var form = $('#form-pegawai-detail');
+      var pegawai_name 	= $(this).closest('tr').find('td:nth-child(1)').text();
+  	$('#pegawai_name_detail').text(pegawai_name);
+
+      console.log(out);
+  		if (out.status) {
+  			form.find('input[name="id"]').val(out.data.id);
+        form.find('input[name="pegawai_name"]').val(out.data.pegawai_name);
+        form.find('input[name="TTL"]').val(out.data.TTL);
+        form.find('input[name="alamat"]').val(out.data.alamat);
+        form.find('input[name="telp"]').val(out.data.telp);
+        form.find('input[name="pegawai_gender"]').val(out.data.pegawai_gender);
+        form.find('input[name="pegawai_status"]').val(out.data.status);
+
+
+  			$('#modal-pegawai-detail').modal('show');
+  		} else {
+  			swal('Failed', out.msg, 'error');
+  		}
+  	});
+
+    $('#modal-pegawai-detail').modal('show');
+  });
+
+  // $(document).on('click', '.btn-pegawai-detail', function() {
+  // 	$('#data').DataTable().destroy();
+  // 	var pegawai_id 		= $(this).data('id');
+  // 	var pegawai_name 	= $(this).closest('tr').find('td:nth-child(1)').text();
+  // 	$('#pegawai_name_detail').text(pegawai_name);
+
+	// $('#data').DataTable( {
+  //       ajax: {
+  //       	url: '/pegawai/detail/'+pegawai_id,
+  //       	type: 'GET'
+  //       },
+  //       columns: [
+  //           { data: "pegawai_name" },
+  //           { data: "TTL"},
+  //           { data: "telp" },
+  //           { data: "pegawai_gender" },
+  //           { data: "status" }
+  //       ]
+  //   });
+	// $('#modal-pegawai-detail').modal('show');
+	// });
+
+  // $(document).on('click', '.btn-pegawai-detail', function() {
+  // 	$('#detail-data').DataTable().destroy();
+  // 	var pegawai_id 		= $(this).data('id');
+  //   var pegawai_name 	= $(this).closest('tr').find('td:nth-child(2)').text();
+    
+  // 	$('#pegawai_name_detail').text(pegawai_name);
+
+  // 	$('#detail-data').DataTable( {
+  //     ajax: {
+  //     	url: '/pegawai/detail/'+pegawai_id,
+  //     	type: 'GET'
+  //     },
+  //     columns: [
+  //         { data: "name" },
+  //         { data: "telp" },
+  //         { data: "kota.kota_name" },
+  //         { data: "gender" }
+  //     ]
+  //   });
+  // 	$('#modal-pegawai-detail').modal('show');
+  // });
+
+  $(document).on('submit', '#form-pegawai-import', function(e) {
+    e.preventDefault();
+
+    $.ajax({
+      url: '/pegawai/import',
+      type: 'POST',
+      dataType: 'json',
+      data: new FormData( this ),
+      processData: false,
+      contentType: false
+    })
+    .done(function(out) {
+      $('#modal-pegawai-import').modal('hide');
+      if (out.status) {
+        swal('Success', out.msg, 'success');
+      } else {
+        swal('Failed', out.msg, 'error');
+      }
+      console.log("success");
+    });
+  });
+</script>

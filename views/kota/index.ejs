@@ -1,0 +1,281 @@
+<div class="box">
+  <div class="box-header">
+    <div class="col-md-6" style="padding: 0;">
+        <button class="form-control btn btn-primary" data-toggle="modal" data-target="#modal-kota-add"><i class="glyphicon glyphicon-plus-sign"></i> Tambah Data</button>
+    </div>
+    <div class="col-md-3">
+        <a href="/kota/export" target="_blank" class="form-control btn btn-default"><i class="glyphicon glyphicon glyphicon-floppy-save"></i> Export Data Excel</a>
+    </div>
+    <!-- <div class="col-md-3">
+        <button class="form-control btn btn-default" data-toggle="modal" data-target="#modal-kota-import"><i class="glyphicon glyphicon glyphicon-floppy-open"></i> Import Data Excel</button>
+    </div> -->
+  </div>
+  <div class="box-body">
+    <table id="list-data" class="table table-bordered table-striped" width="100%">
+	    <thead>
+            <tr>
+                <th>No</th>
+                <th>Kota</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modal-kota-add" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+		<div class="col-md-offset-1 col-md-10 col-md-offset-1 well">
+		  <div class="form-msg"></div>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		  <h3 style="display:block; text-align:center;">Tambah Data Kota</h3>
+
+		  <form id="form-kota-add">
+		    <div class="input-group form-group">
+		      <span class="input-group-addon" id="sizing-addon2">
+		        <i class="glyphicon glyphicon-user"></i>
+		      </span>
+		      <input type="text" class="form-control" placeholder="Nama Kota" name="kota_name" aria-describedby="sizing-addon2">
+		    </div>
+		    <div class="form-group">
+		      <div class="col-md-12">
+		          <button type="submit" class="form-control btn btn-primary"> <i class="glyphicon glyphicon-ok"></i> Tambah Data</button>
+		      </div>
+		    </div>
+		  </form>
+		</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-kota-update" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+		<div class="col-md-offset-1 col-md-10 col-md-offset-1 well">
+		  <div class="form-msg"></div>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		  <h3 style="display:block; text-align:center;">Update Data Kota</h3>
+
+		  <form id="form-kota-update">
+	        <input type="hidden" name="id">
+		    <div class="input-group form-group">
+		      <span class="input-group-addon" id="sizing-addon2">
+		        <i class="glyphicon glyphicon-user"></i>
+		      </span>
+		      <input type="text" class="form-control" placeholder="Nama Kota" name="kota_name" aria-describedby="sizing-addon2">
+		    </div>
+		    <div class="form-group">
+		      <div class="col-md-12">
+		          <button type="submit" class="form-control btn btn-primary"> <i class="glyphicon glyphicon-ok"></i> Update Data</button>
+		      </div>
+		    </div>
+		  </form>
+		</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-kota-detail" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+		<div class="col-md-12 well">
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		  <h3 style="display:block; text-align:center;"><i class="fa fa-briefcase"></i> List Pegawai (Kota: <b id="kota_name_detail">-</b>)</h3>
+
+		  <div class="box box-body">
+		      <table id="detail-data" class="table table-bordered table-striped">
+		        <thead>
+		          <tr>
+		            <th>Nama</th>
+                <th>No Telp</th>
+                <th>Jenis Kelamin</th>
+                <th>Posisi</th>
+		          </tr>
+		        </thead>
+		      </table>
+		  </div>
+
+		  <div class="text-right">
+		    <button class="btn btn-danger" data-dismiss="modal"> Close</button>
+		  </div>
+		</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-kota-import" role="dialog">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
+		<div class="col-md-offset-1 col-md-10 col-md-offset-1 well">
+		  <div class="form-msg"></div>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		  <h3 style="display:block; text-align:center;">Import Data Kota</h3>
+
+		  <form method="POST" action="/kota/import" enctype="multipart/form-data">
+		    <div class="input-group form-group">
+		      <span class="input-group-addon" id="sizing-addon2">
+		        <i class="glyphicon glyphicon-file"></i>
+		      </span>
+		      <input type="file" class="form-control" name="excel" aria-describedby="sizing-addon2">
+		    </div>
+		    <div class="form-group">
+		      <div class="col-md-12">
+		          <button type="submit" class="form-control btn btn-primary"> <i class="glyphicon glyphicon-ok"></i> Import Data</button>
+		      </div>
+		    </div>
+		  </form>
+		</div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $('#list-data').DataTable( {
+        ajax: {
+        	url: '/kota/get',
+        	type: 'GET'
+        },
+        columns: [
+            { data: "number" },
+            { data: "kota_name" },
+            { data: "act", className: "text-center" }
+        ]
+    });
+
+    socket.connect('/public/join');
+    io.socket.on('kota_add', function (out) {
+    	if (out.status) {
+			$('#list-data').DataTable().ajax.reload();
+    	}
+	});
+	io.socket.on('kota_update', function (out) {
+    	if (out.status) {
+			$('#list-data').DataTable().ajax.reload();
+    	}
+	});
+	io.socket.on('kota_delete', function (out) {
+    	if (out.status) {
+			$('#list-data').DataTable().ajax.reload();
+    	}
+	});
+  });
+
+  
+  $(document).on('submit', '#form-kota-add', function(e) {
+  	e.preventDefault();
+
+    var data = $(this).serialize();
+    $.post('/kota/add', data, function(out) {
+		$('#modal-kota-add').modal('hide');
+    	if (out.status) {
+			$(this).find('input[name="kota_name"]').val('');
+    		swal('Success', out.msg, 'success');
+    	} else {
+    		swal('Failed', out.msg, 'error');
+    	}
+    });
+  });
+
+  $(document).on('click', '.btn-kota-update', function() {
+  	var kota_id 		= $(this).data('id');
+
+  	$.get('/kota/show_edit/'+kota_id, function(out) {
+  		var form = $('#form-kota-update');
+			console.log(out);
+  		if (out.status) {
+  			form.find('input[name="id"]').val(out.data.id);
+  			form.find('input[name="kota_name"]').val(out.data.kota_name);
+
+			$('#modal-kota-update').modal('show');
+  		} else {
+  			swal('Failed', out.msg, 'error');
+  		}
+  	});
+
+	$('#modal-kota-update').modal('show');
+  });
+
+  $(document).on('submit', '#form-kota-update', function(e) {
+  	e.preventDefault();
+		console.log(data);
+		var data = $(this).serialize();
+    $.post('/kota/update', data, function(out) {
+		$('#modal-kota-update').modal('hide');
+    	if (out.status) {
+    		swal('Success', out.msg, 'success');
+    	} else {
+    		swal('Failed', out.msg, 'error');
+    	}
+    });
+  });
+
+  $(document).on('click', '.btn-kota-delete', function() {
+		var kota_id 		= $(this).data('id');
+
+  	swal({
+		title: 'Delete',
+		text: "Hapus Data Ini?",
+		type: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Ya, Hapus Data Ini',
+		cancelButtonText: 'Batal',
+		confirmButtonClass: 'btn btn-success',
+		cancelButtonClass: 'btn btn-danger'
+	}).then(function () {
+	  	$.post('/kota/delete', {kota_id: kota_id}, function(out) {
+	    	if (out.status) {
+	    		swal('Success', out.msg, 'success');
+	    	} else {
+	    		swal('Failed', out.msg, 'error');
+	    	}
+	    });
+	}, function (dismiss) {
+		if (dismiss === 'cancel') {}
+	});
+  });
+
+  $(document).on('click', '.btn-kota-detail', function() {
+  	$('#detail-data').DataTable().destroy();
+  	var kota_id 		= $(this).data('id');
+  	var kota_name 	= $(this).closest('tr').find('td:nth-child(2)').text();
+  	$('#kota_name_detail').text(kota_name);
+
+	$('#detail-data').DataTable( {
+        ajax: {
+        	url: '/kota/detail/'+kota_id,
+        	type: 'GET'
+        },
+        columns: [
+            { data: "pegawai_name" },
+            { data: "telp" },
+            { data: "pegawai_gender" },
+            { data: "posisi.posisi_name" },
+        ]
+    });
+	$('#modal-kota-detail').modal('show');
+	});
+	
+	$(document).on('submit', '#form-kota-import', function(e) {
+    e.preventDefault();
+
+    $.ajax({
+      url: '/kota/import',
+      type: 'POST',
+      dataType: 'json',
+      data: new FormData( this ),
+      processData: false,
+      contentType: false
+    })
+    .done(function(out) {
+      $('#modal-kota-import').modal('hide');
+      if (out.status) {
+        swal('Success', out.msg, 'success');
+      } else {
+        swal('Failed', out.msg, 'error');
+      }
+    });
+  });
+</script>

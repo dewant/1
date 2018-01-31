@@ -1,0 +1,183 @@
+<div class="box">
+    <div class="box-header">
+      <div class="col-md-6" style="padding: 0;">
+          <button class="form-control btn btn-primary" data-toggle="modal" data-target="#modal-cuti-add"><i class="glyphicon glyphicon-plus-sign"></i> Tambah Data</button>
+      </div>
+      <div class="col-md-3">
+          <a href="/cuti/export" target="_blank" class="form-control btn btn-default"><i class="glyphicon glyphicon glyphicon-floppy-save"></i> Export Data Excel</a>
+      </div>
+    </div>
+    <div class="box-body">
+      <table id="list-data" class="table table-bordered table-striped" width="100%">
+          <thead>
+              <tr>
+                  <th>Nama</th>
+                  <th>Jabatan</th>
+                  <th>No. Hp</th>
+                  <th>Mulai</th>
+                  <th>Lama</th>
+                  <th>Keperluan</th>
+                  <th>Aksi</th>
+              </tr>
+          </thead>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="modal-cuti-add" role="dialog">
+    <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content">
+          <div class="col-md-offset-1 col-md-10 col-md-offset-1 well">
+            <div class="form-msg"></div>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h3 style="display:block; text-align:center;">Tambah Data cuti</h3>
+  
+            <form id="form-cuti-add">
+              <div class="input-group form-group">
+                <span class="input-group-addon" id="sizing-addon2">
+                  <i class="glyphicon glyphicon-user"></i>
+                </span>
+                <input type="text" class="form-control" placeholder="Nama Pegawai" name="pegawai_name" aria-describedby="sizing-addon2">
+              </div>
+
+              <div class="input-group form-group">
+                <span class="input-group-addon" id="sizing-addon2">
+                  <i class="glyphicon glyphicon-briefcase"></i>
+                </span>
+                <select name="posisi" class="form-control select2" aria-describedby="sizing-addon2">  
+                  <% Posisi.forEach(posisi=>{ %>
+                    <option value="<%= posisi.id %>"><%= posisi.posisi_name %></option>
+                <% }); %>
+                </select>
+                </div>
+
+                <div class="input-group form-group">
+                  <span class="input-group-addon" id="sizing-addon2">
+                    <i class="glyphicon glyphicon-phone-alt"></i>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Nomor Telepon" name="telp" aria-describedby="sizing-addon2">
+                  </div>
+
+                <div class='input-group form-group'>
+                  <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                <input type="date" class="form-control" placeholder="Mulai" name="mulai" aria-describedby="sizing-addon2">
+                </div>
+
+                <div class="input-group form-group">
+                  <span class="input-group-addon" id="sizing-addon2">
+                    <i class="glyphicon glyphicon-briefcase"></i>
+                  </span>
+                  <select name="lama" class="form-control select2" aria-describedby="sizing-addon2">  
+                      <option>1 hari</option>
+                      <option>2 hari</option>
+                      <option>3 hari</option>
+                      <option>4 hari</option>
+                      <option>5 hari</option>
+                      <option>6 hari</option>
+                      <option>1 minggu</option>
+                  </select>
+                  </div>
+
+                  <div class="input-group form-group">
+                    <span class="input-group-addon" id="sizing-addon2">
+                      <i class="glyphicon glyphicon-question-sign"></i>
+                    </span>
+                    <input type="text" class="form-control" placeholder="Keperluan" name="alasan" aria-describedby="sizing-addon2">
+                    </div>
+
+              <div class="form-group">
+                <div class="col-md-12">
+                    <button type="submit" class="form-control btn btn-primary"> <i class="glyphicon glyphicon-ok"></i> Tambah Data</button>
+                </div>
+              </div>
+            </form>
+          </div>
+      </div>
+    </div>
+  </div>
+ 
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('#list-data').DataTable( {
+          ajax: {
+            url: '/cuti/get',
+            type: 'GET'
+          },
+          columns: [
+              { data: "pegawai_name" },
+              { data: "posisi.posisi_name" },
+              { data: "telp"},
+              { data: "mulai"},
+              { data: "lama"},
+              { data: "alasan"},
+            
+              { data: "act", className: "text-center" }
+          ]
+      });
+    
+  
+      socket.connect('/public/join');
+      io.socket.on('cuti_add', function (out) {
+        if (out.status) {
+         $('#list-data').DataTable().ajax.reload();
+        }
+      });
+      io.socket.on('cuti_update', function (out) {
+        if (out.status) {
+         $('#list-data').DataTable().ajax.reload();
+        }
+      });
+      io.socket.on('cuti_delete', function (out) {
+        if (out.status) {
+         $('#list-data').DataTable().ajax.reload();
+        }
+      });
+    });
+  
+    
+    $(document).on('submit', '#form-cuti-add', function(e) {
+      e.preventDefault();
+  
+      var data = $(this).serialize();
+      $.post('/cuti/add', data, function(out) {
+        $('#modal-cuti-add').modal('hide');
+        if (out.status) {
+          $(this).find('input[name="pegawai_name"]').val('');
+          swal('Success', out.msg, 'success');
+        } else {
+          swal('Failed', out.msg, 'error');
+        }
+      });
+    });
+  
+    
+    $(document).on('click', '.btn-cuti-delete', function() {
+      var cuti_id 		= $(this).data('id');
+  
+      swal({
+        title: 'Cuti Sudah Selesai',
+        text: "Hapus Data Ini?",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus Data Ini',
+        cancelButtonText: 'Batal',
+        confirmButtonClass: 'btn btn-success',
+        cancelButtonClass: 'btn btn-danger'
+      }).then(function () {
+          $.post('/cuti/delete', {cuti_id: cuti_id}, function(out) {
+            if (out.status) {
+              swal('Success', out.msg, 'success');
+            } else {
+              swal('Failed', out.msg, 'error');
+            }
+          });
+      }, function (dismiss) {
+        if (dismiss === 'cancel') {}
+      });
+    });
+
+</script>
